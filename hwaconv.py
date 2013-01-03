@@ -196,6 +196,20 @@ def get_pref(s):
     return u''
 
 
+def create_output_family_dict(frec):
+    fam_dict = dict(frec)
+    names = re.split(u' |\u3000', fam_dict['fam_name'])
+    if len(names) == 2:
+        fam_dict['fam_sei'] = names[0]
+        fam_dict['fam_mei'] = names[1]
+    elif len(names) == 1:
+        fam_dict['fam_sei'] = u''
+        fam_dict['fam_mei'] = names[0]
+    else:
+        fam_dict['fam_sei'] = u''
+        fam_dict['fam_mei'] = u''
+
+    return fam_dict
 def main():
     if len(sys.argv) < 2:
         print "please set hwa file parameter"
@@ -216,15 +230,25 @@ def main():
             + '\t${zip}\t${pref}\t${shichou}\t${addr1}\t${addr2}'           #住所系
             + '\t\t\t\t\t\t\t\t\t${keishou}'    #会社系
         )
-        fam_tmpl = string.Template('\t${fam_name}\t${fam_keishou}')
+        fam_tmpl = string.Template('\t${fam_sei}\t${fam_mei}\t${fam_name}\t${fam_keishou}')
+
+        #output header
+        out.write(u'氏名（姓）\t氏名（名）\tフリガナ（姓）\tフリガナ（名）\tリスト表示用氏名\tリスト表示用フリガナ\t')
+        out.write(u'郵便番号（自宅）\t自宅住所（都道府県）\t自宅住所（市町村）\t自宅住所（番地等）\t自宅住所（建物名）\t')
+        out.write( u'会社名\t部署名\t役職\t郵便番号（会社）\t会社住所（都道府県）\t会社住所（市町村）\t会社住所（番地等）\t会社住所（建物名）\t敬称\t')
+        out.write( u'連名1（姓）\t連名1（名）\t連名1（姓名）\t連名1（敬称）\t連名2（姓）\t連名2（名）\t連名2（姓名）\t連名2（敬称）\t連名3（姓）\t連名3（名）\t連名3（姓名）\t連名3（敬称）')
+
+        out.write('\r\n')
+
 
         for addr in data['addr_header']:
             out.write(tmpl.substitute(create_output_dict(addr)))
 
             for frec in addr['to_family_header']:
-                out.write(fam_tmpl.substitute(frec))
+
+                out.write(fam_tmpl.substitute(create_output_family_dict(frec)))
                 for x in range(3-len(addr['to_family_header'])):
-                    out.write("\t\t")    #足りない分を埋める
+                    out.write("\t\t\t\t")    #足りない分を埋める
 
             out.write('\r\n')
 
